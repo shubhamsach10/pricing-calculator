@@ -27,21 +27,6 @@ steps:
       - '--allow-unauthenticated'
       - '--port'
       - '8080'
-  
-  # Set IAM policy to allow public access
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'services'
-      - 'add-iam-policy-binding'
-      - 'birdeye-pricing'
-      - '--region'
-      - 'us-central1'
-      - '--member'
-      - 'allUsers'
-      - '--role'
-      - 'roles/run.invoker'
 
 images:
   - 'gcr.io/$PROJECT_ID/birdeye-pricing:$SHORT_SHA'
