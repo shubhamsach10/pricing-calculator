@@ -6,53 +6,80 @@ export function calculatePricing(
   settings: AppSettings,
   _existingCredits: number = 0
 ): CalculationResult {
-  // Step 1: Calculate total credits needed
-  const breakdown = usageInputs.map(input => {
-    const product = settings.products.find(p => p.id === input.productId);
-    const component = product?.components.find(c => c.name === input.componentName);
-    
-    if (!product || !component) {
-      return {
-        productName: '',
-        componentName: '',
-        usage: 0,
-        credits: 0,
-      };
+  // Group inputs by product to handle product-level formulas
+  const inputsByProduct = usageInputs.reduce((acc, input) => {
+    if (!acc[input.productId]) {
+      acc[input.productId] = [];
     }
+    acc[input.productId].push(input);
+    return acc;
+  }, {} as Record<string, UsageInput[]>);
 
-    let credits: number;
+  const breakdown: Array<{
+    productName: string;
+    componentName: string;
+    usage: number;
+    credits: number;
+  }> = [];
 
-    // Check if component has multiple inputs
-    if (component.inputs && component.inputs.length > 0) {
-      if (component.useFormula && component.formula) {
-        // Formula mode: Use formula with all input variables
-        try {
-          const variables = input.inputs || {};
-          credits = evaluateFormula(component.formula, variables);
-        } catch (error) {
-          console.error('Formula calculation error:', error);
-          // Fallback: Sum all inputs
-          credits = Object.values(input.inputs || {}).reduce((sum, val) => sum + val, 0);
+  // Process each product
+  Object.entries(inputsByProduct).forEach(([productId, productInputs]) => {
+    const product = settings.products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Check if product uses formula mode
+    if (product.useFormula && product.formula) {
+      // Build variables object from all components
+      const variables: Record<string, number> = {};
+      
+      productInputs.forEach(input => {
+        const component = product.components.find(c => c.name === input.componentName);
+        if (component?.varName) {
+          variables[component.varName] = input.value;
         }
-      } else {
-        // Normal mode: Sum all (input value × input multiplier)
-        credits = component.inputs.reduce((sum, inputDef) => {
-          const inputValue = input.inputs?.[inputDef.varName] || 0;
-          return sum + (inputValue * inputDef.multiplier);
-        }, 0);
+      });
+
+      try {
+        // Calculate total credits using formula
+        const totalCredits = evaluateFormula(product.formula, variables);
+        
+        // Add single breakdown entry for the product
+        breakdown.push({
+          productName: product.name,
+          componentName: 'Formula-based calculation',
+          usage: Object.values(variables).reduce((sum, val) => sum + val, 0),
+          credits: totalCredits,
+        });
+      } catch (error) {
+        console.error('Formula calculation error:', error);
+        // Fallback to normal calculation
+        productInputs.forEach(input => {
+          const component = product.components.find(c => c.name === input.componentName);
+          if (component) {
+            breakdown.push({
+              productName: product.name,
+              componentName: component.name,
+              usage: input.value,
+              credits: input.value * component.multiplier,
+            });
+          }
+        });
       }
     } else {
-      // Simple single-input component
-      credits = input.value * component.multiplier;
+      // Normal mode: Calculate each component separately
+      productInputs.forEach(input => {
+        const component = product.components.find(c => c.name === input.componentName);
+        if (component) {
+          breakdown.push({
+            productName: product.name,
+            componentName: component.name,
+            usage: input.value,
+            credits: input.value * component.multiplier,
+          });
+        }
+      });
     }
-    
-    return {
-      productName: product.name,
-      componentName: component.name,
-      usage: input.value,
-      credits,
-    };
-  }).filter(item => item.productName !== '');
+  });
 
   const totalCredits = breakdown.reduce((sum, item) => sum + item.credits, 0);
 

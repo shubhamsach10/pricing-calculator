@@ -108,41 +108,6 @@ export function Settings() {
     setLocalSettings({ ...localSettings, tiers: updatedTiers });
   };
 
-  const addComponentInput = (productIndex: number, componentIndex: number) => {
-    const updatedProducts = [...localSettings.products];
-    const component = updatedProducts[productIndex].components[componentIndex];
-    const inputs = component.inputs || [];
-    inputs.push({
-      varName: '',
-      label: '',
-      multiplier: 1.0,
-    });
-    component.inputs = inputs;
-    setLocalSettings({ ...localSettings, products: updatedProducts });
-  };
-
-  const updateComponentInput = (
-    productIndex: number,
-    componentIndex: number,
-    inputIndex: number,
-    field: string,
-    value: any
-  ) => {
-    const updatedProducts = [...localSettings.products];
-    const inputs = updatedProducts[productIndex].components[componentIndex].inputs || [];
-    inputs[inputIndex] = { ...inputs[inputIndex], [field]: value };
-    updatedProducts[productIndex].components[componentIndex].inputs = inputs;
-    setLocalSettings({ ...localSettings, products: updatedProducts });
-  };
-
-  const deleteComponentInput = (productIndex: number, componentIndex: number, inputIndex: number) => {
-    const updatedProducts = [...localSettings.products];
-    const inputs = updatedProducts[productIndex].components[componentIndex].inputs || [];
-    inputs.splice(inputIndex, 1);
-    updatedProducts[productIndex].components[componentIndex].inputs = inputs;
-    setLocalSettings({ ...localSettings, products: updatedProducts });
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -359,7 +324,7 @@ export function Settings() {
                         key={componentIndex}
                         className="p-3 bg-slate-50 rounded-lg space-y-3"
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-slate-600 mb-1">
                               Name
@@ -371,6 +336,20 @@ export function Settings() {
                                 updateComponent(productIndex, componentIndex, 'name', e.target.value)
                               }
                               className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              Variable (e.g., P, L)
+                            </label>
+                            <input
+                              type="text"
+                              value={component.varName || ''}
+                              onChange={(e) =>
+                                updateComponent(productIndex, componentIndex, 'varName', e.target.value)
+                              }
+                              placeholder="Optional"
+                              className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono"
                             />
                           </div>
                           <div>
@@ -427,128 +406,57 @@ export function Settings() {
                           </div>
                         </div>
 
-                        {/* Multi-Input Configuration */}
-                        <div className="border-t border-slate-200 pt-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs font-medium text-slate-700">
-                              📊 Multiple Input Fields (Optional)
-                            </span>
-                            <button
-                              onClick={() => addComponentInput(productIndex, componentIndex)}
-                              className="flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs hover:bg-blue-100 transition-colors"
-                            >
-                              <Plus className="w-3 h-3 mr-1" />
-                              Add Input Field
-                            </button>
-                          </div>
-
-                          {component.inputs && component.inputs.length > 0 && (
-                            <div className="space-y-2 mb-3">
-                              {component.inputs.map((input, inputIndex) => (
-                                <div key={inputIndex} className="grid grid-cols-4 gap-2 items-end bg-blue-50 p-2 rounded">
-                                  <div>
-                                    <label className="block text-xs font-medium text-blue-900 mb-1">
-                                      Variable (e.g., L, G, F)
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={input.varName}
-                                      onChange={(e) =>
-                                        updateComponentInput(productIndex, componentIndex, inputIndex, 'varName', e.target.value)
-                                      }
-                                      placeholder="L"
-                                      className="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-blue-900 mb-1">
-                                      Label (for sales reps)
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={input.label}
-                                      onChange={(e) =>
-                                        updateComponentInput(productIndex, componentIndex, inputIndex, 'label', e.target.value)
-                                      }
-                                      placeholder="Locations"
-                                      className="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-blue-900 mb-1">
-                                      Multiplier (if no formula)
-                                    </label>
-                                    <input
-                                      type="number"
-                                      step="0.1"
-                                      value={input.multiplier}
-                                      onChange={(e) =>
-                                        updateComponentInput(productIndex, componentIndex, inputIndex, 'multiplier', parseFloat(e.target.value))
-                                      }
-                                      className="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                                    />
-                                  </div>
-                                  <button
-                                    onClick={() => deleteComponentInput(productIndex, componentIndex, inputIndex)}
-                                    className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Formula Configuration */}
-                          {component.inputs && component.inputs.length > 0 && (
-                            <div className="border-t border-slate-200 pt-3 mt-3">
-                              <div className="flex items-center mb-2">
-                                <input
-                                  type="checkbox"
-                                  id={`formula-${productIndex}-${componentIndex}`}
-                                  checked={component.useFormula || false}
-                                  onChange={(e) =>
-                                    updateComponent(productIndex, componentIndex, 'useFormula', e.target.checked)
-                                  }
-                                  className="w-3 h-3 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
-                                />
-                                <label
-                                  htmlFor={`formula-${productIndex}-${componentIndex}`}
-                                  className="ml-2 text-xs font-medium text-slate-700"
-                                >
-                                  ⚡ Use Advanced Formula (instead of sum)
-                                </label>
-                              </div>
-
-                              {component.useFormula && (
-                                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
-                                  <div>
-                                    <label className="block text-xs font-medium text-purple-900 mb-1">
-                                      Formula using variables: {component.inputs.map(i => i.varName).join(', ')}
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={component.formula || ''}
-                                      onChange={(e) =>
-                                        updateComponent(productIndex, componentIndex, 'formula', e.target.value)
-                                      }
-                                      placeholder="(L * G * F) * (B + M)"
-                                      className="w-full px-2 py-1.5 border border-purple-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
-                                    />
-                                  </div>
-                                  
-                                  <div className="text-xs text-purple-800 bg-purple-100 p-2 rounded space-y-1">
-                                    <div><strong>Without formula:</strong> Sum all (input × multiplier)</div>
-                                    <div><strong>With formula:</strong> Use formula to calculate total credits</div>
-                                    <div className="text-purple-600 mt-1">Example: (L * G * F) * (B + M) where all variables come from input fields above</div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Product-Level Formula Configuration */}
+                  <div className="ml-4 mt-4 border-t border-slate-300 pt-4">
+                    <div className="flex items-center mb-3">
+                      <input
+                        type="checkbox"
+                        id={`product-formula-${productIndex}`}
+                        checked={product.useFormula || false}
+                        onChange={(e) =>
+                          updateProduct(productIndex, 'useFormula', e.target.checked)
+                        }
+                        className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
+                      />
+                      <label
+                        htmlFor={`product-formula-${productIndex}`}
+                        className="ml-2 text-sm font-medium text-slate-900"
+                      >
+                        ⚡ Use Advanced Formula for this Product
+                      </label>
+                    </div>
+
+                    {product.useFormula && (
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-purple-900 mb-2">
+                            Formula using variables: {product.components.filter(c => c.varName).map(c => c.varName).join(', ') || '(add variables to components first)'}
+                          </label>
+                          <input
+                            type="text"
+                            value={product.formula || ''}
+                            onChange={(e) =>
+                              updateProduct(productIndex, 'formula', e.target.value)
+                            }
+                            placeholder="(L * G * F) * (B + M)"
+                            className="w-full px-3 py-2 border border-purple-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+                          />
+                        </div>
+                        
+                        <div className="text-xs text-purple-800 bg-purple-100 p-3 rounded space-y-1">
+                          <div><strong>How it works:</strong></div>
+                          <div>• <strong>Without formula (unchecked):</strong> Sum all components normally (component value × multiplier)</div>
+                          <div>• <strong>With formula (checked):</strong> Use your custom formula with component variables</div>
+                          <div className="text-purple-700 mt-2 pt-2 border-t border-purple-200">
+                            💡 <strong>Example:</strong> If you have components with variables L, G, F, B, M, you can write: (L * G * F) * (B + M)
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
