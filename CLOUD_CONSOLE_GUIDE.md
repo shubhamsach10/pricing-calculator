@@ -172,7 +172,45 @@ If the build fails, see the troubleshooting section below.
 
 ## Part 7: Connect Custom Domain (Optional)
 
-### Step 11: Add Your Domain
+### Step 11: Verify Your Domain First
+
+Before you can map your domain, Google needs to verify you own it.
+
+1. **Go to:** https://console.cloud.google.com/run/domains
+2. **Click "VERIFY A NEW DOMAIN"** button
+3. **Enter your root domain:** `yourdomain.com` (not `pricing.yourdomain.com`)
+4. **Click "CONTINUE"**
+5. **Google shows you a verification code** (TXT record)
+6. **Copy the verification code** (long string starting with `google-site-verification=`)
+
+### Step 11b: Add TXT Record to Your Domain
+
+Go to your domain registrar and add a TXT record:
+
+**Record details:**
+- Type: `TXT`
+- Name: `@` (or leave blank)
+- Value: Paste the verification code from Google
+- TTL: 600 or Auto
+
+**Common registrars:**
+- **GoDaddy:** My Products → DNS → Add → TXT Record
+- **Namecheap:** Domain List → Manage → Advanced DNS → Add TXT Record
+- **Google Domains:** DNS → Custom resource records → TXT
+- **Cloudflare:** DNS → Add record → TXT
+
+**Wait 15-30 minutes** for DNS propagation.
+
+### Step 11c: Verify Domain Ownership
+
+1. **Go back to:** https://console.cloud.google.com/run/domains
+2. **Click "VERIFY"** next to your domain
+3. **Wait for:** Status changes to ✅ "Verified"
+4. **If still pending:** Wait another 10-15 minutes and try again
+
+### Step 12: Map Your Subdomain
+
+Now that your domain is verified:
 
 1. **Go to:** https://console.cloud.google.com/run
 2. **Click** on your service `birdeye-pricing`
@@ -181,7 +219,7 @@ If the build fails, see the troubleshooting section below.
 5. **Fill in details:**
    - **Service:** birdeye-pricing
    - **Region:** us-central1
-   - **Domain:** Type your domain (e.g., `pricing.yourdomain.com`)
+   - **Domain:** Type your subdomain (e.g., `pricing.yourdomain.com`)
 6. **Click "CONTINUE"**
 
 ### Step 12: Update DNS Records
@@ -220,7 +258,7 @@ Value: ghs.googlehosted.com.
 4. Enter the values Google gave you
 5. Click "Add"
 
-### Step 13: Wait for SSL Certificate
+### Step 14: Wait for SSL Certificate
 
 1. **DNS propagation** takes 15-30 minutes (sometimes up to 48 hours)
 2. **Go back to** Cloud Run console
