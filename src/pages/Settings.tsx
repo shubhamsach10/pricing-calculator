@@ -6,7 +6,6 @@ import { AppSettings, PricingTier, Product, ProductComponent } from '../types';
 export function Settings() {
   const {
     settings,
-    updateSettings,
     resetSettings,
     saveForEveryone,
     saveForMe,
