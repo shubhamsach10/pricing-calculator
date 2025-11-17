@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { Save, RotateCcw, Plus, Trash2, DollarSign, TrendingUp, Layers } from 'lucide-react';
 import { AppSettings, PricingTier, Product, ProductComponent } from '../types';

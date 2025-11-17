@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, TrendingUp, Sparkles } from 'lucide-react';
 import { formatCredits, formatCurrency } from '../utils/calculations';
 

@@ -3,7 +3,7 @@ import { AppSettings, UsageInput, CalculationResult, PricingTier } from '../type
 export function calculatePricing(
   usageInputs: UsageInput[],
   settings: AppSettings,
-  existingCredits: number = 0
+  _existingCredits: number = 0
 ): CalculationResult {
   // Step 1: Calculate total credits needed
   const breakdown = usageInputs.map(input => {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Product, UsageInput } from '../types';
-import { ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ProductSelectorProps {
   products: Product[];

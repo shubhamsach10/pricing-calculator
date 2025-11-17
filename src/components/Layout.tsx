@@ -1,6 +1,5 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Calculator, Settings, FileText } from 'lucide-react';
+import { Calculator, Settings } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;

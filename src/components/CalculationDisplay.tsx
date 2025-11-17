@@ -1,4 +1,3 @@
-import React from 'react';
 import { CalculationResult, DealInfo, AppSettings } from '../types';
 import { formatCurrency, formatCredits, calculateUpsellPrice } from '../utils/calculations';
 import { TrendingUp, AlertCircle, CheckCircle, FileText } from 'lucide-react';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { DealInfo, UsageInput, CalculationResult } from '../types';
 import { DealInitialization } from '../components/DealInitialization';
