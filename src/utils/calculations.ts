@@ -22,25 +22,27 @@ export function calculatePricing(
 
     let credits: number;
 
-    // Check if component uses formula-based pricing
-    if (component.useFormula && component.formula) {
-      try {
-        // Use 'value' or 'V' as the variable name for user input
-        const variables = {
-          value: input.value,
-          V: input.value,
-          ...component.formulaConstants,
-          ...(input.formulaInputs || {}),
-        };
-        
-        credits = evaluateFormula(component.formula, variables);
-      } catch (error) {
-        console.error('Formula calculation error:', error);
-        // Fallback to simple multiplication
-        credits = input.value * component.multiplier;
+    // Check if component has multiple inputs
+    if (component.inputs && component.inputs.length > 0) {
+      if (component.useFormula && component.formula) {
+        // Formula mode: Use formula with all input variables
+        try {
+          const variables = input.inputs || {};
+          credits = evaluateFormula(component.formula, variables);
+        } catch (error) {
+          console.error('Formula calculation error:', error);
+          // Fallback: Sum all inputs
+          credits = Object.values(input.inputs || {}).reduce((sum, val) => sum + val, 0);
+        }
+      } else {
+        // Normal mode: Sum all (input value × input multiplier)
+        credits = component.inputs.reduce((sum, inputDef) => {
+          const inputValue = input.inputs?.[inputDef.varName] || 0;
+          return sum + (inputValue * inputDef.multiplier);
+        }, 0);
       }
     } else {
-      // Simple multiplication for standard components
+      // Simple single-input component
       credits = input.value * component.multiplier;
     }
     

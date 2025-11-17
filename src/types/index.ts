@@ -8,22 +8,23 @@ export interface GlobalSettings {
   safetyBufferEnabled: boolean;
 }
 
-export interface FormulaVariable {
-  varName: string; // e.g., "L", "G", "F"
+export interface ComponentInput {
+  varName: string; // e.g., "L", "G", "F", "B", "M"
   label: string; // e.g., "Locations", "Grid Points"
+  multiplier: number; // Individual multiplier if not using formula
   defaultValue?: number;
 }
 
 export interface ProductComponent {
   name: string;
   metric: string;
-  multiplier: number;
+  multiplier: number; // Fallback multiplier
   isFlat?: boolean;
+  // Multi-input configuration
+  inputs?: ComponentInput[]; // Multiple input fields with variable names
   // Formula-based pricing (optional)
   useFormula?: boolean;
   formula?: string; // e.g., "(L * G * F) * (B + M)"
-  formulaVariables?: FormulaVariable[];
-  formulaConstants?: Record<string, number>; // e.g., { B: 5, M: 10 }
 }
 
 export interface Product {
@@ -49,9 +50,9 @@ export interface AppSettings {
 export interface UsageInput {
   productId: string;
   componentName: string;
-  value: number;
-  // For formula-based components
-  formulaInputs?: Record<string, number>; // e.g., { L: 10, G: 49, F: 4 }
+  value: number; // For simple single-input components
+  // For multi-input components
+  inputs?: Record<string, number>; // e.g., { L: 10, G: 49, F: 4, B: 5, M: 0 }
 }
 
 export interface CalculationResult {

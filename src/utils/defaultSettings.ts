@@ -9,16 +9,30 @@ export const defaultSettings: AppSettings = {
     safetyBufferEnabled: false,
   },
   products: [
-    {
-      id: 'search-ai',
-      name: 'Search AI',
-      category: 'AI & Analytics',
-      components: [
-        { name: 'Prompts', metric: 'Per Prompt', multiplier: 5.0 },
-        { name: 'Reports', metric: 'Per Report Generated', multiplier: 50.0 },
-        { name: 'Additional LLMs', metric: 'Per Additional LLM', multiplier: 10000, isFlat: true },
-      ],
-    },
+      {
+        id: 'search-ai',
+        name: 'Search AI',
+        category: 'AI & Analytics',
+        components: [
+          { name: 'Prompts', metric: 'Per Prompt', multiplier: 5.0 },
+          { name: 'Reports', metric: 'Per Report Generated', multiplier: 50.0 },
+          { name: 'Additional LLMs', metric: 'Per Additional LLM', multiplier: 10000, isFlat: true },
+          { 
+            name: 'Advanced Scan', 
+            metric: 'Complex Calculation', 
+            multiplier: 1.0,
+            inputs: [
+              { varName: 'L', label: 'Locations', multiplier: 1.0 },
+              { varName: 'G', label: 'Grid Points', multiplier: 1.0 },
+              { varName: 'F', label: 'Frequency/Month', multiplier: 1.0 },
+              { varName: 'B', label: 'Base Cost', multiplier: 1.0 },
+              { varName: 'M', label: 'Model Premium', multiplier: 1.0 },
+            ],
+            useFormula: true,
+            formula: '(L * G * F) * (B + M)',
+          },
+        ],
+      },
     {
       id: 'reviews',
       name: 'Reviews',
