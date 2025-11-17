@@ -20,12 +20,15 @@ export function Settings() {
   const handleSaveForEveryone = async () => {
     setIsSaving(true);
     try {
+      console.log('🔄 Attempting to save settings for everyone...');
       await saveForEveryone(localSettings);
       setSaveMessage('✅ Settings saved for everyone! All users will see these changes.');
       setTimeout(() => setSaveMessage(''), 4000);
-    } catch (error) {
-      setSaveMessage('❌ Error saving settings. Please try again.');
-      setTimeout(() => setSaveMessage(''), 4000);
+    } catch (error: any) {
+      console.error('❌ Error saving for everyone:', error);
+      const errorMsg = error?.message || 'Unknown error';
+      setSaveMessage(`❌ Error: ${errorMsg}. Check Firebase rules or console.`);
+      setTimeout(() => setSaveMessage(''), 6000);
     } finally {
       setIsSaving(false);
     }
