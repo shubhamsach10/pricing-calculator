@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { Save, RotateCcw, Plus, Trash2, DollarSign, TrendingUp, Layers } from 'lucide-react';
 import { AppSettings, PricingTier, Product, ProductComponent } from '../types';
@@ -16,6 +16,12 @@ export function Settings() {
   const [activeTab, setActiveTab] = useState<'global' | 'products' | 'tiers'>('global');
   const [saveMessage, setSaveMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync localSettings when global settings change from Firebase
+  useEffect(() => {
+    console.log('🔄 Global settings changed, syncing to local state');
+    setLocalSettings(JSON.parse(JSON.stringify(settings)));
+  }, [settings]);
 
   const handleSaveForEveryone = async () => {
     setIsSaving(true);
