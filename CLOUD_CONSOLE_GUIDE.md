@@ -121,11 +121,14 @@ This guide walks you through deploying your pricing calculator using **only the 
    
    **Source:** 
    - Repository: `YOUR_GITHUB_USERNAME/birdeye-pricing-calculator`
-   - Branch: `^main$`
+   - Branch: `^main$` (or `^master$` if your branch is called master)
    
    **Configuration:**
    - Type: **"Cloud Build configuration file (yaml or json)"**
    - Location: `/ cloudbuild.yaml`
+   
+   **Scroll down to "Logging" section:**
+   - **Logging:** Select **"Cloud Logging only"** (Important!)
    
 4. **Click "CREATE"** at the bottom
 
@@ -357,6 +360,22 @@ Now only those users can access the app (they'll need to sign in with Google).
 3. **Read the error message**
 
 **Common issues:**
+
+#### Error: "service_account is specified... logging options"
+This is a logging configuration error. **Two quick fixes:**
+
+**Fix A - Edit the Trigger (Easiest):**
+1. Go to: https://console.cloud.google.com/cloud-build/triggers
+2. Click on your trigger name
+3. Scroll to "Logging" section
+4. Change to: **"Cloud Logging only"**
+5. Click "SAVE"
+6. Try running again
+
+**Fix B - Already Fixed in Code:**
+- Your latest `cloudbuild.yaml` includes the fix
+- Just pull the latest code from GitHub
+- The trigger will use the updated config automatically
 
 #### Error: "cloudbuild.yaml not found"
 **Solution:** Make sure `cloudbuild.yaml` is in the root of your repository
