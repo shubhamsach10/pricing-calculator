@@ -322,72 +322,122 @@ export function Settings() {
                     {product.components.map((component, componentIndex) => (
                       <div
                         key={componentIndex}
-                        className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg"
+                        className="p-3 bg-slate-50 rounded-lg space-y-3"
                       >
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">
-                            Name
-                          </label>
-                          <input
-                            type="text"
-                            value={component.name}
-                            onChange={(e) =>
-                              updateComponent(productIndex, componentIndex, 'name', e.target.value)
-                            }
-                            className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              Name
+                            </label>
+                            <input
+                              type="text"
+                              value={component.name}
+                              onChange={(e) =>
+                                updateComponent(productIndex, componentIndex, 'name', e.target.value)
+                              }
+                              className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              Metric
+                            </label>
+                            <input
+                              type="text"
+                              value={component.metric}
+                              onChange={(e) =>
+                                updateComponent(productIndex, componentIndex, 'metric', e.target.value)
+                              }
+                              className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              Multiplier (Credits)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={component.multiplier}
+                              onChange={(e) =>
+                                updateComponent(productIndex, componentIndex, 'multiplier', parseFloat(e.target.value))
+                              }
+                              className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            />
+                          </div>
+                          <div className="flex items-end space-x-2">
+                            <div className="flex items-center flex-1">
+                              <input
+                                type="checkbox"
+                                id={`flat-${productIndex}-${componentIndex}`}
+                                checked={component.isFlat || false}
+                                onChange={(e) =>
+                                  updateComponent(productIndex, componentIndex, 'isFlat', e.target.checked)
+                                }
+                                className="w-3 h-3 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                              />
+                              <label
+                                htmlFor={`flat-${productIndex}-${componentIndex}`}
+                                className="ml-1 text-xs text-slate-600"
+                              >
+                                Flat Fee
+                              </label>
+                            </div>
+                            <button
+                              onClick={() => deleteComponent(productIndex, componentIndex)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">
-                            Metric
-                          </label>
-                          <input
-                            type="text"
-                            value={component.metric}
-                            onChange={(e) =>
-                              updateComponent(productIndex, componentIndex, 'metric', e.target.value)
-                            }
-                            className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">
-                            Multiplier (Credits)
-                          </label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={component.multiplier}
-                            onChange={(e) =>
-                              updateComponent(productIndex, componentIndex, 'multiplier', parseFloat(e.target.value))
-                            }
-                            className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="flex items-end space-x-2">
-                          <div className="flex items-center flex-1">
+
+                        {/* Advanced Calculation Section */}
+                        <div className="border-t border-slate-200 pt-3">
+                          <div className="flex items-center mb-2">
                             <input
                               type="checkbox"
-                              id={`flat-${productIndex}-${componentIndex}`}
-                              checked={component.isFlat || false}
+                              id={`formula-${productIndex}-${componentIndex}`}
+                              checked={component.useFormula || false}
                               onChange={(e) =>
-                                updateComponent(productIndex, componentIndex, 'isFlat', e.target.checked)
+                                updateComponent(productIndex, componentIndex, 'useFormula', e.target.checked)
                               }
-                              className="w-3 h-3 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                              className="w-3 h-3 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
                             />
                             <label
-                              htmlFor={`flat-${productIndex}-${componentIndex}`}
-                              className="ml-1 text-xs text-slate-600"
+                              htmlFor={`formula-${productIndex}-${componentIndex}`}
+                              className="ml-2 text-xs font-medium text-slate-700"
                             >
-                              Flat Fee
+                              ⚡ Use Advanced Calculation (Formula)
                             </label>
                           </div>
-                          <button
-                            onClick={() => deleteComponent(productIndex, componentIndex)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+
+                          {component.useFormula && (
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
+                              <div>
+                                <label className="block text-xs font-medium text-purple-900 mb-1">
+                                  Formula (e.g., (L * G * F) * (B + M))
+                                </label>
+                                <input
+                                  type="text"
+                                  value={component.formula || ''}
+                                  onChange={(e) =>
+                                    updateComponent(productIndex, componentIndex, 'formula', e.target.value)
+                                  }
+                                  placeholder="Enter formula using variables"
+                                  className="w-full px-2 py-1.5 border border-purple-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+                                />
+                                <div className="text-xs text-purple-700 mt-1">
+                                  💡 Tip: Use variables (L, G, F) for user inputs and constants (B, M) for fixed values
+                                </div>
+                              </div>
+                              
+                              <div className="text-xs text-purple-800 bg-purple-100 p-2 rounded">
+                                <strong>Note:</strong> Formulas are configured in Settings but hidden from sales reps. 
+                                They only see a simple input field and "Advanced" badge.
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

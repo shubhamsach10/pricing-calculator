@@ -23,10 +23,12 @@ export function calculatePricing(
     let credits: number;
 
     // Check if component uses formula-based pricing
-    if (component.useFormula && component.formula && component.formulaVariables) {
+    if (component.useFormula && component.formula) {
       try {
-        // Merge formula inputs with constants
+        // Use 'value' or 'V' as the variable name for user input
         const variables = {
+          value: input.value,
+          V: input.value,
           ...component.formulaConstants,
           ...(input.formulaInputs || {}),
         };
