@@ -76,17 +76,23 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
 
     // Build variables object from current inputs
     const variables: Record<string, number> = {};
-    let hasAllValues = true;
+    let hasAnyInput = false;
 
     product.components.forEach(component => {
       if (component.varName) {
         const value = getUsageValue(product.id, component.name);
         variables[component.varName] = value;
-        if (value === 0) hasAllValues = false;
+        
+        // Check if this component has been explicitly set (exists in usageInputs)
+        const hasInput = usageInputs.some(
+          input => input.productId === product.id && input.componentName === component.name
+        );
+        if (hasInput) hasAnyInput = true;
       }
     });
 
-    if (!hasAllValues) return null;
+    // Show preview if at least one field has been filled (even if it's 0)
+    if (!hasAnyInput) return null;
 
     try {
       const result = evaluateFormula(product.formula, variables);
