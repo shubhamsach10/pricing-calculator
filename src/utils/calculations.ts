@@ -29,9 +29,17 @@ export function calculatePricing(
 
     // Check if product uses formula mode
     if (product.useFormula && product.formula) {
-      // Build variables object from all components
+      // Build variables object from ALL components (not just filled ones)
       const variables: Record<string, number> = {};
       
+      // Initialize all component variables to 0
+      product.components.forEach(component => {
+        if (component.varName) {
+          variables[component.varName] = 0;
+        }
+      });
+      
+      // Override with actual input values
       productInputs.forEach(input => {
         const component = product.components.find(c => c.name === input.componentName);
         if (component?.varName) {
