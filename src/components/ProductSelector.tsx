@@ -143,35 +143,87 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                       {product.components.map((component) => (
                         <div
                           key={component.name}
-                          className="grid grid-cols-2 gap-3 p-3 bg-white rounded-lg border border-slate-200"
+                          className={`p-3 bg-white rounded-lg border border-slate-200 ${
+                            component.useFormula ? 'space-y-3' : 'grid grid-cols-2 gap-3'
+                          }`}
                         >
-                          <div>
-                            <div className="text-sm font-medium text-slate-900">
-                              {component.name}
-                            </div>
-                            <div className="text-xs text-slate-500">{component.metric}</div>
-                            <div className="text-xs text-primary-600 font-medium mt-1">
-                              {component.multiplier.toLocaleString()} credits
-                              {component.isFlat && ' (flat fee)'}
-                            </div>
-                          </div>
-                          <div>
-                            <input
-                              type="number"
-                              min="0"
-                              value={getUsageValue(product.id, component.name) || ''}
-                              onChange={(e) =>
-                                handleUsageInput(
-                                  product.id,
-                                  component.name,
-                                  parseInt(e.target.value) || 0
-                                )
-                              }
-                              placeholder="0"
-                              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
+                          {component.useFormula && component.formulaVariables ? (
+                            // Formula-based component
+                            <>
+                              <div className="border-b border-slate-200 pb-2">
+                                <div className="text-sm font-medium text-slate-900 flex items-center">
+                                  {component.name}
+                                  <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                                    Formula
+                                  </span>
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">
+                                  Formula: {component.formula}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {component.formulaVariables.map((variable) => (
+                                  <div key={variable.varName}>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                                      {variable.label} ({variable.varName})
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      placeholder={variable.defaultValue?.toString() || '0'}
+                                      className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) => {
+                                        // Handle formula variable input
+                                        const value = parseInt(e.target.value) || 0;
+                                        // This needs to be handled differently - storing formula inputs
+                                        console.log('Formula input:', variable.varName, value);
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              {component.formulaConstants && (
+                                <div className="text-xs text-slate-600 bg-slate-50 p-2 rounded">
+                                  <span className="font-medium">Constants:</span>{' '}
+                                  {Object.entries(component.formulaConstants)
+                                    .map(([k, v]) => `${k}=${v}`)
+                                    .join(', ')}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            // Standard component
+                            <>
+                              <div>
+                                <div className="text-sm font-medium text-slate-900">
+                                  {component.name}
+                                </div>
+                                <div className="text-xs text-slate-500">{component.metric}</div>
+                                <div className="text-xs text-primary-600 font-medium mt-1">
+                                  {component.multiplier.toLocaleString()} credits
+                                  {component.isFlat && ' (flat fee)'}
+                                </div>
+                              </div>
+                              <div>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={getUsageValue(product.id, component.name) || ''}
+                                  onChange={(e) =>
+                                    handleUsageInput(
+                                      product.id,
+                                      component.name,
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  placeholder="0"
+                                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>

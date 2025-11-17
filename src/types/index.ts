@@ -8,11 +8,22 @@ export interface GlobalSettings {
   safetyBufferEnabled: boolean;
 }
 
+export interface FormulaVariable {
+  varName: string; // e.g., "L", "G", "F"
+  label: string; // e.g., "Locations", "Grid Points"
+  defaultValue?: number;
+}
+
 export interface ProductComponent {
   name: string;
   metric: string;
   multiplier: number;
   isFlat?: boolean;
+  // Formula-based pricing (optional)
+  useFormula?: boolean;
+  formula?: string; // e.g., "(L * G * F) * (B + M)"
+  formulaVariables?: FormulaVariable[];
+  formulaConstants?: Record<string, number>; // e.g., { B: 5, M: 10 }
 }
 
 export interface Product {
@@ -39,6 +50,8 @@ export interface UsageInput {
   productId: string;
   componentName: string;
   value: number;
+  // For formula-based components
+  formulaInputs?: Record<string, number>; // e.g., { L: 10, G: 49, F: 4 }
 }
 
 export interface CalculationResult {

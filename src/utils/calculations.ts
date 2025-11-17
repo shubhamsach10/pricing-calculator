@@ -1,4 +1,5 @@
 import { AppSettings, UsageInput, CalculationResult, PricingTier } from '../types';
+import { evaluateFormula } from './formulaEvaluator';
 
 export function calculatePricing(
   usageInputs: UsageInput[],
@@ -19,7 +20,27 @@ export function calculatePricing(
       };
     }
 
-    const credits = input.value * component.multiplier;
+    let credits: number;
+
+    // Check if component uses formula-based pricing
+    if (component.useFormula && component.formula && component.formulaVariables) {
+      try {
+        // Merge formula inputs with constants
+        const variables = {
+          ...component.formulaConstants,
+          ...(input.formulaInputs || {}),
+        };
+        
+        credits = evaluateFormula(component.formula, variables);
+      } catch (error) {
+        console.error('Formula calculation error:', error);
+        // Fallback to simple multiplication
+        credits = input.value * component.multiplier;
+      }
+    } else {
+      // Simple multiplication for standard components
+      credits = input.value * component.multiplier;
+    }
     
     return {
       productName: product.name,

@@ -17,6 +17,22 @@ export const defaultSettings: AppSettings = {
         { name: 'Prompts', metric: 'Per Prompt', multiplier: 5.0 },
         { name: 'Reports', metric: 'Per Report Generated', multiplier: 50.0 },
         { name: 'Additional LLMs', metric: 'Per Additional LLM', multiplier: 10000, isFlat: true },
+        {
+          name: 'Advanced Scan (Formula)',
+          metric: 'Formula-based calculation',
+          multiplier: 1, // Fallback if formula fails
+          useFormula: true,
+          formula: '(L * G * F) * (B + M)',
+          formulaVariables: [
+            { varName: 'L', label: 'Locations', defaultValue: 1 },
+            { varName: 'G', label: 'Grid Points (9 for 3x3, 49 for 7x7)', defaultValue: 9 },
+            { varName: 'F', label: 'Frequency (scans per month)', defaultValue: 1 },
+          ],
+          formulaConstants: {
+            B: 5, // Base cost per prompt
+            M: 0, // Model premium (0 if no additional LLM, 10 if using premium)
+          },
+        },
       ],
     },
     {
