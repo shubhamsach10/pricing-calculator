@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Product, UsageInput } from '../types';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { evaluateFormula } from '../utils/formulaEvaluator';
 
 interface ProductSelectorProps {
   products: Product[];
@@ -68,6 +69,31 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
       input => input.productId === productId && input.componentName === componentName
     );
     return input?.value || 0;
+  };
+
+  const calculateFormulaPreview = (product: Product) => {
+    if (!product.useFormula || !product.formula) return null;
+
+    // Build variables object from current inputs
+    const variables: Record<string, number> = {};
+    let hasAllValues = true;
+
+    product.components.forEach(component => {
+      if (component.varName) {
+        const value = getUsageValue(product.id, component.name);
+        variables[component.varName] = value;
+        if (value === 0) hasAllValues = false;
+      }
+    });
+
+    if (!hasAllValues) return null;
+
+    try {
+      const result = evaluateFormula(product.formula, variables);
+      return { variables, result, formula: product.formula };
+    } catch (error) {
+      return null;
+    }
   };
 
   // Group products by category
@@ -194,6 +220,77 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                         </div>
                       ))}
                     </div>
+
+                    {/* Formula Calculation Preview */}
+                    {product.useFormula && (() => {
+                      const preview = calculateFormulaPreview(product);
+                      if (!preview) return null;
+
+                      // Create formula with substituted values for display
+                      let formulaWithValues = preview.formula;
+                      Object.entries(preview.variables).forEach(([varName, value]) => {
+                        formulaWithValues = formulaWithValues.replace(
+                          new RegExp(`\\b${varName}\\b`, 'g'),
+                          value.toString()
+                        );
+                      });
+
+                      return (
+                        <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center mb-3">
+                            <Calculator className="w-4 h-4 text-blue-700 mr-2" />
+                            <span className="text-sm font-semibold text-blue-900">
+                              Formula Calculation
+                            </span>
+                          </div>
+
+                          {/* Variables */}
+                          <div className="mb-3 p-3 bg-white rounded border border-blue-100">
+                            <div className="text-xs font-medium text-slate-700 mb-2">Variables:</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              {Object.entries(preview.variables).map(([varName, value]) => (
+                                <div key={varName} className="flex items-center">
+                                  <span className="text-xs font-mono font-semibold text-blue-700 mr-2">
+                                    {varName} =
+                                  </span>
+                                  <span className="text-xs font-medium text-slate-900">
+                                    {value.toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Formula */}
+                          <div className="mb-3 p-3 bg-white rounded border border-blue-100">
+                            <div className="text-xs font-medium text-slate-700 mb-2">Formula:</div>
+                            <div className="text-sm font-mono text-slate-900 mb-2">
+                              {preview.formula}
+                            </div>
+                            <div className="text-xs text-slate-600">Substituting values:</div>
+                            <div className="text-sm font-mono text-blue-700 mt-1">
+                              {formulaWithValues}
+                            </div>
+                          </div>
+
+                          {/* Result */}
+                          <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-slate-700">
+                                Total Credits:
+                              </span>
+                              <span className="text-2xl font-bold text-green-700">
+                                {preview.result.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-2 text-xs text-slate-600 italic">
+                            💡 This calculation is shown for your reference. Final pricing will be calculated on the right.
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
