@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+README.md
+QUICK_START.md
+pricingcalculator.md
+.DS_Store
+npm-debug.log*
+*.local
+.vscode
+.idea
+
