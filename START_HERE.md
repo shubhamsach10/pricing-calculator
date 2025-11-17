@@ -17,7 +17,50 @@ Everything is ready! Your code is committed to Git locally. Now follow these sim
 
 ## 🎯 What To Do Next
 
-### Step 1: Push to GitHub (5 minutes)
+### Choose Your Path:
+
+**Option A: UI-Driven (Recommended for beginners) 🖱️**
+- Use Google Cloud Console (web interface)
+- Click through everything - no terminal needed!
+- **→ Follow: `CLOUD_CONSOLE_GUIDE.md`**
+
+**Option B: Terminal/CLI (For developers) ⌨️**
+- Use command line
+- Faster if you're comfortable with terminal
+- **→ Continue below**
+
+---
+
+## 🖱️ Option A: UI-Driven Deployment
+
+**Perfect if you prefer clicking over typing!**
+
+Since you've already pushed to GitHub ✅, now:
+
+1. **Open the file:** `CLOUD_CONSOLE_GUIDE.md`
+2. **Start at Part 1** (Create Google Cloud Account)
+3. **Follow each step** with screenshots descriptions
+4. **Everything is done in your browser!**
+
+That guide will walk you through:
+- Creating Google Cloud account
+- Setting up your project (clicking through web interface)
+- Connecting GitHub (one-click)
+- Deploying your app (automatic!)
+- Connecting your domain (visual steps)
+
+**Time needed:** 20-30 minutes of clicking  
+**Terminal needed:** None! 🎉
+
+---
+
+## ⌨️ Option B: Terminal/CLI Deployment
+
+### Step 1: Push to GitHub (5 minutes) ✅
+
+**Already done!** ✅ Your code is on GitHub.
+
+### Step 2: Install Google Cloud CLI (5 minutes)
 
 1. **Go to GitHub and create a new repository:**
    - Visit: https://github.com/new
