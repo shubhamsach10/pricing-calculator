@@ -4,14 +4,26 @@ import { AppSettings } from '../types';
 
 const GLOBAL_SETTINGS_PATH = 'settings/global';
 
+console.log('🔥 Firebase service loaded. Database URL:', database.app.options.databaseURL);
+
 /**
  * Save settings for everyone (global settings)
  */
 export const saveGlobalSettings = async (settings: AppSettings): Promise<void> => {
   try {
+    console.log('📝 Saving to Firebase path:', GLOBAL_SETTINGS_PATH);
+    console.log('📝 Settings to save:', settings);
     const settingsRef = ref(database, GLOBAL_SETTINGS_PATH);
     await set(settingsRef, settings);
-    console.log('✅ Settings saved globally');
+    console.log('✅ Settings saved globally to Firebase');
+    
+    // Verify by reading back
+    const snapshot = await get(settingsRef);
+    if (snapshot.exists()) {
+      console.log('✅ Verified: Settings exist in Firebase');
+    } else {
+      console.error('⚠️ Warning: Settings not found after save!');
+    }
   } catch (error) {
     console.error('❌ Error saving global settings:', error);
     throw error;
@@ -23,11 +35,13 @@ export const saveGlobalSettings = async (settings: AppSettings): Promise<void> =
  */
 export const loadGlobalSettings = async (): Promise<AppSettings | null> => {
   try {
+    console.log('📖 Loading from Firebase path:', GLOBAL_SETTINGS_PATH);
     const settingsRef = ref(database, GLOBAL_SETTINGS_PATH);
     const snapshot = await get(settingsRef);
     
     if (snapshot.exists()) {
       console.log('✅ Global settings loaded from Firebase');
+      console.log('📖 Loaded settings:', snapshot.val());
       return snapshot.val() as AppSettings;
     } else {
       console.log('ℹ️ No global settings found in Firebase');
@@ -35,6 +49,7 @@ export const loadGlobalSettings = async (): Promise<AppSettings | null> => {
     }
   } catch (error) {
     console.error('❌ Error loading global settings:', error);
+    console.error('Error details:', error);
     return null;
   }
 };
