@@ -4,15 +4,47 @@ import { Save, RotateCcw, Plus, Trash2, DollarSign, TrendingUp, Layers } from 'l
 import { AppSettings, PricingTier, Product, ProductComponent } from '../types';
 
 export function Settings() {
-  const { settings, updateSettings, resetSettings } = useSettings();
+  const {
+    settings,
+    updateSettings,
+    resetSettings,
+    saveForEveryone,
+    saveForMe,
+    revertToGlobal,
+    isUsingPersonalSettings,
+  } = useSettings();
   const [localSettings, setLocalSettings] = useState<AppSettings>(JSON.parse(JSON.stringify(settings)));
   const [activeTab, setActiveTab] = useState<'global' | 'products' | 'tiers'>('global');
   const [saveMessage, setSaveMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    updateSettings(localSettings);
-    setSaveMessage('Settings saved successfully!');
-    setTimeout(() => setSaveMessage(''), 3000);
+  const handleSaveForEveryone = async () => {
+    setIsSaving(true);
+    try {
+      await saveForEveryone(localSettings);
+      setSaveMessage('✅ Settings saved for everyone! All users will see these changes.');
+      setTimeout(() => setSaveMessage(''), 4000);
+    } catch (error) {
+      setSaveMessage('❌ Error saving settings. Please try again.');
+      setTimeout(() => setSaveMessage(''), 4000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveForMe = () => {
+    saveForMe(localSettings);
+    setSaveMessage('✅ Settings saved for you only! Others will see global settings.');
+    setTimeout(() => setSaveMessage(''), 4000);
+  };
+
+  const handleRevertToGlobal = async () => {
+    if (confirm('Revert to global settings? Your personal settings will be discarded.')) {
+      await revertToGlobal();
+      setLocalSettings(JSON.parse(JSON.stringify(settings)));
+      setSaveMessage('✅ Reverted to global settings!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    }
   };
 
   const handleReset = () => {
@@ -110,31 +142,55 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Pricing Settings</h1>
           <p className="mt-1 text-slate-600">Configure global parameters, products, and pricing tiers</p>
+          {isUsingPersonalSettings && (
+            <div className="mt-2 inline-flex items-center px-3 py-1 bg-amber-100 text-amber-800 text-sm rounded-full">
+              <span className="mr-2">👤</span>
+              You're using personal settings
+              <button
+                onClick={handleRevertToGlobal}
+                className="ml-2 text-xs underline hover:text-amber-900"
+              >
+                Revert to global
+              </button>
+            </div>
+          )}
         </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={handleReset}
-            className="flex items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset to Defaults
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg hover:shadow-xl"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save Changes
-          </button>
+        <div className="flex flex-col space-y-2">
+          <div className="flex space-x-2">
+            <button
+              onClick={handleReset}
+              className="flex items-center px-3 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset to Defaults
+            </button>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleSaveForEveryone}
+              disabled={isSaving}
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? 'Saving...' : 'Save for Everyone'}
+            </button>
+            <button
+              onClick={handleSaveForMe}
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg hover:shadow-xl"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save for Me Only
+            </button>
+          </div>
         </div>
       </div>
 
       {saveMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+        <div className="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded-lg">
           {saveMessage}
         </div>
       )}
