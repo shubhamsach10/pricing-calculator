@@ -201,7 +201,7 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                             <div className="text-xs text-slate-500">{component.metric}</div>
                             {!product.useFormula && (
                               <div className="text-xs text-primary-600 font-medium mt-1">
-                                {component.multiplier.toLocaleString()} credits
+                                {(component.multiplier ?? 0).toLocaleString()} credits
                                 {component.isFlat && ' (flat fee)'}
                               </div>
                             )}
@@ -260,7 +260,7 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                                     {varName} =
                                   </span>
                                   <span className="text-xs font-medium text-slate-900">
-                                    {value.toLocaleString()}
+                                    {(value ?? 0).toLocaleString()}
                                   </span>
                                 </div>
                               ))}
@@ -286,7 +286,7 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                                 Total Credits:
                               </span>
                               <span className="text-2xl font-bold text-green-700">
-                                {preview.result.toLocaleString()}
+                                {(preview.result ?? 0).toLocaleString()}
                               </span>
                             </div>
                           </div>

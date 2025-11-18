@@ -124,6 +124,9 @@ export function calculatePricing(
 
 
 export function formatCurrency(amount: number, symbol: string = '$'): string {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    return `${symbol}0.00`;
+  }
   return `${symbol}${amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -131,6 +134,9 @@ export function formatCurrency(amount: number, symbol: string = '$'): string {
 }
 
 export function formatCredits(credits: number): string {
+  if (credits === undefined || credits === null || isNaN(credits)) {
+    return '0';
+  }
   return credits.toLocaleString('en-US');
 }
 
