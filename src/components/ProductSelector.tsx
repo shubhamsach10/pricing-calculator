@@ -1,15 +1,23 @@
 import { useState } from 'react';
-import { Product, UsageInput } from '../types';
-import { ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { Product, UsageInput, ProductDiscount } from '../types';
+import { ChevronDown, ChevronUp, Calculator, DollarSign } from 'lucide-react';
 import { evaluateFormula } from '../utils/formulaEvaluator';
 
 interface ProductSelectorProps {
   products: Product[];
   onUsageChange: (inputs: UsageInput[]) => void;
   usageInputs: UsageInput[];
+  productDiscounts: ProductDiscount[];
+  onDiscountChange: (discounts: ProductDiscount[]) => void;
 }
 
-export function ProductSelector({ products, onUsageChange, usageInputs }: ProductSelectorProps) {
+export function ProductSelector({ 
+  products, 
+  onUsageChange, 
+  usageInputs,
+  productDiscounts,
+  onDiscountChange 
+}: ProductSelectorProps) {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
@@ -69,6 +77,28 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
       input => input.productId === productId && input.componentName === componentName
     );
     return input?.value || 0;
+  };
+
+  const handleDiscountChange = (productId: string, discountAmount: number) => {
+    const newDiscounts = [...productDiscounts];
+    const existingIndex = newDiscounts.findIndex(d => d.productId === productId);
+
+    if (existingIndex >= 0) {
+      if (discountAmount === 0) {
+        newDiscounts.splice(existingIndex, 1);
+      } else {
+        newDiscounts[existingIndex].discountAmount = discountAmount;
+      }
+    } else if (discountAmount > 0) {
+      newDiscounts.push({ productId, discountAmount });
+    }
+
+    onDiscountChange(newDiscounts);
+  };
+
+  const getDiscountValue = (productId: string): number => {
+    const discount = productDiscounts.find(d => d.productId === productId);
+    return discount?.discountAmount || 0;
   };
 
   const calculateFormulaPreview = (product: Product) => {
@@ -297,6 +327,39 @@ export function ProductSelector({ products, onUsageChange, usageInputs }: Produc
                         </div>
                       );
                     })()}
+
+                    {/* Discount Input */}
+                    <div className="mt-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-center mb-3">
+                        <DollarSign className="w-4 h-4 text-amber-700 mr-2" />
+                        <span className="text-sm font-semibold text-amber-900">
+                          Sales Discount (Optional)
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-amber-900 mb-2">
+                          Discount Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={getDiscountValue(product.id) || ''}
+                          onChange={(e) =>
+                            handleDiscountChange(
+                              product.id,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          placeholder="0.00"
+                          className="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <p className="text-xs text-amber-700 mt-2">
+                          Enter a dollar amount to discount from this product's price
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

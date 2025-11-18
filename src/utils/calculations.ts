@@ -1,6 +1,21 @@
 import { AppSettings, UsageInput, CalculationResult, ProductDiscount } from '../types';
 import { evaluateFormula } from './formulaEvaluator';
 
+// Helper formatting functions
+export function formatCurrency(amount: number, symbol: string): string {
+  return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+export function formatCredits(credits: number): string {
+  return credits.toLocaleString('en-US');
+}
+
+export function calculateUpsellPrice(newTotalPrice: number, existingCredits: number, existingPrice: number): number {
+  // For upsell, subtract the existing credit value from the new total
+  // This gives the net pay amount (incremental cost)
+  return Math.max(0, newTotalPrice - existingPrice);
+}
+
 export function calculatePricing(
   usageInputs: UsageInput[],
   settings: AppSettings,

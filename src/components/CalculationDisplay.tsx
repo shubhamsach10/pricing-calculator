@@ -83,37 +83,58 @@ export function CalculationDisplay({
           </div>
         </div>
 
-        {/* Tier Information */}
+        {/* Price Per Credit */}
         <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 border border-primary-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-primary-900">Current Tier</span>
+            <span className="text-sm font-medium text-primary-900">Price Per Credit</span>
             <CheckCircle className="w-5 h-5 text-primary-600" />
           </div>
-          <div className="text-2xl font-bold text-primary-900 mb-1">
-            {calculation.tier.name}
+          <div className="text-2xl font-bold text-primary-900">
+            {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)}
           </div>
-          <div className="text-sm text-primary-700">
-            {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)} per credit
-          </div>
-          <div className="text-xs text-primary-600 mt-2">
-            {formatCredits(calculation.tier.minCredits)} -{' '}
-            {calculation.tier.maxCredits
-              ? formatCredits(calculation.tier.maxCredits)
-              : '∞'}{' '}
-            credits
+          <div className="text-xs text-primary-600 mt-1">
+            Fixed pricing for all credits
           </div>
         </div>
 
         {/* Price Display */}
         <div className="space-y-3">
-          <div className="bg-slate-50 rounded-lg p-4">
-            <div className="text-sm text-slate-600 mb-1">Estimated Annual Cost</div>
-            <div className="text-3xl font-bold text-slate-900">
-              {formatCurrency(calculation.totalPrice, settings.global.currencySymbol)}
+          <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Base Price</span>
+              <span className="text-lg font-semibold text-slate-900">
+                {formatCurrency(calculation.basePrice, settings.global.currencySymbol)}
+              </span>
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-slate-500">
               {formatCredits(calculation.finalCredits)} credits × {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)}
             </div>
+
+            {calculation.totalDiscount > 0 && (
+              <>
+                <div className="border-t border-slate-300 pt-2 flex justify-between items-center">
+                  <span className="text-sm text-green-600">Sales Discount</span>
+                  <span className="text-lg font-semibold text-green-600">
+                    -{formatCurrency(calculation.totalDiscount, settings.global.currencySymbol)}
+                  </span>
+                </div>
+                <div className="border-t-2 border-slate-400 pt-2 flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-700">Final Price</span>
+                  <span className="text-2xl font-bold text-slate-900">
+                    {formatCurrency(calculation.totalPrice, settings.global.currencySymbol)}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {calculation.totalDiscount === 0 && (
+              <div className="border-t-2 border-slate-400 pt-2">
+                <div className="text-sm text-slate-600 mb-1">Estimated Annual Cost</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {formatCurrency(calculation.totalPrice, settings.global.currencySymbol)}
+                </div>
+              </div>
+            )}
           </div>
 
           {isUpsell && (

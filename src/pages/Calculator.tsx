@@ -1,43 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../context/SettingsContext';
-import { DealInfo, UsageInput, CalculationResult } from '../types';
+import { DealInfo, UsageInput, CalculationResult, ProductDiscount } from '../types';
 import { DealInitialization } from '../components/DealInitialization';
 import { ProductSelector } from '../components/ProductSelector';
 import { CalculationDisplay } from '../components/CalculationDisplay';
-import { SmartNudge } from '../components/SmartNudge';
 import { QuoteSummary } from '../components/QuoteSummary';
-import { calculatePricing, findNextTierThreshold } from '../utils/calculations';
+import { calculatePricing } from '../utils/calculations';
 
 export function Calculator() {
   const { settings } = useSettings();
   const [step, setStep] = useState<'init' | 'calculate' | 'quote'>('init');
   const [dealInfo, setDealInfo] = useState<DealInfo | null>(null);
   const [usageInputs, setUsageInputs] = useState<UsageInput[]>([]);
+  const [productDiscounts, setProductDiscounts] = useState<ProductDiscount[]>([]);
   const [calculation, setCalculation] = useState<CalculationResult | null>(null);
-  const [showNudge, setShowNudge] = useState(false);
-  const [nudgeInfo, setNudgeInfo] = useState<any>(null);
 
   useEffect(() => {
     if (usageInputs.length > 0 && dealInfo?.pricingModel === 'credits') {
-      const result = calculatePricing(usageInputs, settings, dealInfo?.existingCredits);
+      const result = calculatePricing(usageInputs, settings, productDiscounts, dealInfo?.existingCredits);
       setCalculation(result);
-
-      // Check for tier threshold nudge
-      const nextTier = findNextTierThreshold(result.finalCredits, settings.tiers);
-      if (nextTier && nextTier.creditsNeeded < result.finalCredits * 0.1) {
-        // Within 10% of next tier
-        const potentialSavings = result.finalCredits * (result.pricePerCredit - nextTier.tier.pricePerCredit);
-        setNudgeInfo({
-          ...nextTier,
-          currentTier: result.tier,
-          potentialSavings,
-        });
-        setShowNudge(true);
-      } else {
-        setShowNudge(false);
-      }
     }
-  }, [usageInputs, settings, dealInfo]);
+  }, [usageInputs, productDiscounts, settings, dealInfo]);
 
   const handleDealStart = (info: DealInfo) => {
     setDealInfo(info);
@@ -65,8 +48,8 @@ export function Calculator() {
     setStep('init');
     setDealInfo(null);
     setUsageInputs([]);
+    setProductDiscounts([]);
     setCalculation(null);
-    setShowNudge(false);
   };
 
   if (step === 'init') {
@@ -114,16 +97,14 @@ export function Calculator() {
         </button>
       </div>
 
-      {showNudge && nudgeInfo && (
-        <SmartNudge nudgeInfo={nudgeInfo} onDismiss={() => setShowNudge(false)} />
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ProductSelector
             products={settings.products}
             onUsageChange={handleUsageChange}
             usageInputs={usageInputs}
+            productDiscounts={productDiscounts}
+            onDiscountChange={setProductDiscounts}
           />
         </div>
 
