@@ -27,24 +27,20 @@ export interface Product {
   formula?: string; // e.g., "(L * G * F) * (B + M)" using component varNames
 }
 
-export interface PricingTier {
-  name: string;
-  minCredits: number;
-  maxCredits: number | null; // null means infinity
-  pricePerCredit: number;
-}
-
 export interface AppSettings {
   global: GlobalSettings;
   products: Product[];
-  tiers: PricingTier[];
 }
 
 export interface UsageInput {
   productId: string;
   componentName: string;
   value: number;
-  discount?: number; // Discount amount in dollars (per product)
+}
+
+export interface ProductDiscount {
+  productId: string;
+  discountAmount: number; // Dollar amount discount
 }
 
 export interface CalculationResult {
@@ -52,10 +48,11 @@ export interface CalculationResult {
   appliedMinimum: boolean;
   finalCredits: number;
   pricePerCredit: number;
-  basePrice: number; // Before discounts
+  basePrice: number;
   totalDiscount: number;
-  totalPrice: number; // After discounts
+  totalPrice: number;
   breakdown: Array<{
+    productId: string;
     productName: string;
     componentName: string;
     usage: number;

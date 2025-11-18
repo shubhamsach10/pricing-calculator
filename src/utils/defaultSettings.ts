@@ -7,7 +7,7 @@ export const defaultSettings: AppSettings = {
     enterpriseMinimum: 5000,
     safetyBuffer: 10,
     safetyBufferEnabled: false,
-    pricePerCredit: 0.20, // $0.20 per credit
+    pricePerCredit: 0.20, // Fixed price per credit
   },
   products: [
       {
@@ -114,32 +114,6 @@ export const defaultSettings: AppSettings = {
       components: [
         { name: 'Locations', metric: 'Per Location', multiplier: 100.0 },
       ],
-    },
-  ],
-  tiers: [
-    {
-      name: 'Starter',
-      minCredits: 0,
-      maxCredits: 10000,
-      pricePerCredit: 0.20,
-    },
-    {
-      name: 'Growth',
-      minCredits: 10001,
-      maxCredits: 50000,
-      pricePerCredit: 0.15,
-    },
-    {
-      name: 'Scale',
-      minCredits: 50001,
-      maxCredits: 250000,
-      pricePerCredit: 0.12,
-    },
-    {
-      name: 'Enterprise',
-      minCredits: 250001,
-      maxCredits: null,
-      pricePerCredit: 0.10,
     },
   ],
 };

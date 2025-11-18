@@ -6,7 +6,7 @@ import { ProductSelector } from '../components/ProductSelector';
 import { CalculationDisplay } from '../components/CalculationDisplay';
 import { SmartNudge } from '../components/SmartNudge';
 import { QuoteSummary } from '../components/QuoteSummary';
-import { calculatePricing } from '../utils/calculations';
+import { calculatePricing, findNextTierThreshold } from '../utils/calculations';
 
 export function Calculator() {
   const { settings } = useSettings();
@@ -15,14 +15,27 @@ export function Calculator() {
   const [usageInputs, setUsageInputs] = useState<UsageInput[]>([]);
   const [calculation, setCalculation] = useState<CalculationResult | null>(null);
   const [showNudge, setShowNudge] = useState(false);
-  const [nudgeInfo] = useState<any>(null);
+  const [nudgeInfo, setNudgeInfo] = useState<any>(null);
 
   useEffect(() => {
     if (usageInputs.length > 0 && dealInfo?.pricingModel === 'credits') {
       const result = calculatePricing(usageInputs, settings, dealInfo?.existingCredits);
       setCalculation(result);
-      // Smart nudges based on discounts can be added here in the future
-      setShowNudge(false);
+
+      // Check for tier threshold nudge
+      const nextTier = findNextTierThreshold(result.finalCredits, settings.tiers);
+      if (nextTier && nextTier.creditsNeeded < result.finalCredits * 0.1) {
+        // Within 10% of next tier
+        const potentialSavings = result.finalCredits * (result.pricePerCredit - nextTier.tier.pricePerCredit);
+        setNudgeInfo({
+          ...nextTier,
+          currentTier: result.tier,
+          potentialSavings,
+        });
+        setShowNudge(true);
+      } else {
+        setShowNudge(false);
+      }
     }
   }, [usageInputs, settings, dealInfo]);
 

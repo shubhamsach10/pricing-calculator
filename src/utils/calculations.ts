@@ -1,14 +1,13 @@
-import { AppSettings, UsageInput, CalculationResult } from '../types';
+import { AppSettings, UsageInput, CalculationResult, ProductDiscount } from '../types';
 import { evaluateFormula } from './formulaEvaluator';
 
 export function calculatePricing(
   usageInputs: UsageInput[],
   settings: AppSettings,
+  discounts: ProductDiscount[] = [],
   _existingCredits: number = 0
 ): CalculationResult {
-  const pricePerCredit = settings.global.pricePerCredit;
-  
-  // Group inputs by product to handle product-level formulas and discounts
+  // Group inputs by product to handle product-level formulas
   const inputsByProduct = usageInputs.reduce((acc, input) => {
     if (!acc[input.productId]) {
       acc[input.productId] = [];
@@ -18,6 +17,7 @@ export function calculatePricing(
   }, {} as Record<string, UsageInput[]>);
 
   const breakdown: Array<{
+    productId: string;
     productName: string;
     componentName: string;
     usage: number;
@@ -34,9 +34,9 @@ export function calculatePricing(
 
     let productCredits = 0;
 
-    // Calculate credits for this product
+    // Check if product uses formula mode
     if (product.useFormula && product.formula) {
-      // Formula mode: Build variables object from ALL components
+      // Build variables object from ALL components (not just filled ones)
       const variables: Record<string, number> = {};
       
       // Initialize all component variables to 0
@@ -55,10 +55,11 @@ export function calculatePricing(
       });
 
       try {
+        // Calculate total credits using formula
         productCredits = evaluateFormula(product.formula, variables);
       } catch (error) {
         console.error('Formula calculation error:', error);
-        // Fallback: sum all components
+        // Fallback to normal calculation
         productInputs.forEach(input => {
           const component = product.components.find(c => c.name === input.componentName);
           if (component) {
@@ -67,7 +68,7 @@ export function calculatePricing(
         });
       }
     } else {
-      // Normal mode: Sum all components
+      // Normal mode: Calculate each component separately
       productInputs.forEach(input => {
         const component = product.components.find(c => c.name === input.componentName);
         if (component) {
@@ -76,26 +77,30 @@ export function calculatePricing(
       });
     }
 
-    // Get discount for this product (from the first input, as discount is per product)
-    const productDiscount = productInputs[0]?.discount || 0;
+    // Calculate base price for this product
+    const basePrice = productCredits * settings.global.pricePerCredit;
+    
+    // Get discount for this product
+    const productDiscount = discounts.find(d => d.productId === productId);
+    const discountAmount = productDiscount?.discountAmount || 0;
+    
+    // Calculate final price
+    const finalPrice = Math.max(0, basePrice - discountAmount);
 
-    // Calculate pricing for this product
-    const basePrice = productCredits * pricePerCredit;
-    const finalPrice = Math.max(0, basePrice - productDiscount);
-
+    // Add to breakdown
     breakdown.push({
+      productId: product.id,
       productName: product.name,
-      componentName: product.useFormula ? 'Formula-based calculation' : 'Standard calculation',
-      usage: productInputs.reduce((sum, input) => sum + input.value, 0),
+      componentName: product.useFormula ? 'Formula-based calculation' : productInputs.map(i => i.componentName).join(', '),
+      usage: productInputs.reduce((sum, i) => sum + i.value, 0),
       credits: productCredits,
-      basePrice: parseFloat(basePrice.toFixed(2)),
-      discount: productDiscount,
-      finalPrice: parseFloat(finalPrice.toFixed(2)),
+      basePrice,
+      discount: discountAmount,
+      finalPrice,
     });
   });
 
   const totalCredits = breakdown.reduce((sum, item) => sum + item.credits, 0);
-  const totalDiscount = breakdown.reduce((sum, item) => sum + item.discount, 0);
 
   // Apply safety buffer if enabled
   const bufferedCredits = settings.global.safetyBufferEnabled
@@ -106,37 +111,20 @@ export function calculatePricing(
   const appliedMinimum = bufferedCredits < settings.global.enterpriseMinimum;
   const finalCredits = Math.max(bufferedCredits, settings.global.enterpriseMinimum);
 
-  // Calculate prices
+  // Calculate pricing
+  const pricePerCredit = settings.global.pricePerCredit;
   const basePrice = finalCredits * pricePerCredit;
+  const totalDiscount = breakdown.reduce((sum, item) => sum + item.discount, 0);
   const totalPrice = Math.max(0, basePrice - totalDiscount);
 
   return {
-    totalCredits: Math.round(totalCredits),
+    totalCredits,
     appliedMinimum,
-    finalCredits: Math.round(finalCredits),
+    finalCredits,
     pricePerCredit,
-    basePrice: parseFloat(basePrice.toFixed(2)),
+    basePrice,
     totalDiscount,
-    totalPrice: parseFloat(totalPrice.toFixed(2)),
+    totalPrice,
     breakdown,
   };
 }
-
-
-export function formatCurrency(amount: number, symbol: string = '$'): string {
-  if (amount === undefined || amount === null || isNaN(amount)) {
-    return `${symbol}0.00`;
-  }
-  return `${symbol}${amount.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
-export function formatCredits(credits: number): string {
-  if (credits === undefined || credits === null || isNaN(credits)) {
-    return '0';
-  }
-  return credits.toLocaleString('en-US');
-}
-
