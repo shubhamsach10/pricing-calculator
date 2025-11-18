@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../context/SettingsContext';
-import { Save, RotateCcw, Plus, Trash2, DollarSign, TrendingUp, Layers } from 'lucide-react';
-import { AppSettings, PricingTier, Product, ProductComponent } from '../types';
+import { Save, RotateCcw, Plus, Trash2, DollarSign, Layers } from 'lucide-react';
+import { AppSettings, Product, ProductComponent } from '../types';
 
 export function Settings() {
   const {
@@ -13,7 +13,7 @@ export function Settings() {
     isUsingPersonalSettings,
   } = useSettings();
   const [localSettings, setLocalSettings] = useState<AppSettings>(JSON.parse(JSON.stringify(settings)));
-  const [activeTab, setActiveTab] = useState<'global' | 'products' | 'tiers'>('global');
+  const [activeTab, setActiveTab] = useState<'global' | 'products'>('global');
   const [saveMessage, setSaveMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 

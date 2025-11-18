@@ -6,6 +6,7 @@ export interface GlobalSettings {
   enterpriseMinimum: number;
   safetyBuffer: number;
   safetyBufferEnabled: boolean;
+  pricePerCredit: number; // Fixed price per credit
 }
 
 export interface ProductComponent {
@@ -43,20 +44,25 @@ export interface UsageInput {
   productId: string;
   componentName: string;
   value: number;
+  discount?: number; // Discount amount in dollars (per product)
 }
 
 export interface CalculationResult {
   totalCredits: number;
   appliedMinimum: boolean;
   finalCredits: number;
-  tier: PricingTier;
-  totalPrice: number;
   pricePerCredit: number;
+  basePrice: number; // Before discounts
+  totalDiscount: number;
+  totalPrice: number; // After discounts
   breakdown: Array<{
     productName: string;
     componentName: string;
     usage: number;
     credits: number;
+    basePrice: number;
+    discount: number;
+    finalPrice: number;
   }>;
 }
 

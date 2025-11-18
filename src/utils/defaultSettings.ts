@@ -7,6 +7,7 @@ export const defaultSettings: AppSettings = {
     enterpriseMinimum: 5000,
     safetyBuffer: 10,
     safetyBufferEnabled: false,
+    pricePerCredit: 0.20, // $0.20 per credit
   },
   products: [
       {

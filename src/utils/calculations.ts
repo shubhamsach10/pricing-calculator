@@ -1,4 +1,4 @@
-import { AppSettings, UsageInput, CalculationResult, PricingTier } from '../types';
+import { AppSettings, UsageInput, CalculationResult } from '../types';
 import { evaluateFormula } from './formulaEvaluator';
 
 export function calculatePricing(
@@ -6,7 +6,9 @@ export function calculatePricing(
   settings: AppSettings,
   _existingCredits: number = 0
 ): CalculationResult {
-  // Group inputs by product to handle product-level formulas
+  const pricePerCredit = settings.global.pricePerCredit;
+  
+  // Group inputs by product to handle product-level formulas and discounts
   const inputsByProduct = usageInputs.reduce((acc, input) => {
     if (!acc[input.productId]) {
       acc[input.productId] = [];
@@ -20,6 +22,9 @@ export function calculatePricing(
     componentName: string;
     usage: number;
     credits: number;
+    basePrice: number;
+    discount: number;
+    finalPrice: number;
   }> = [];
 
   // Process each product
@@ -27,9 +32,11 @@ export function calculatePricing(
     const product = settings.products.find(p => p.id === productId);
     if (!product) return;
 
-    // Check if product uses formula mode
+    let productCredits = 0;
+
+    // Calculate credits for this product
     if (product.useFormula && product.formula) {
-      // Build variables object from ALL components (not just filled ones)
+      // Formula mode: Build variables object from ALL components
       const variables: Record<string, number> = {};
       
       // Initialize all component variables to 0
@@ -48,117 +55,73 @@ export function calculatePricing(
       });
 
       try {
-        // Calculate total credits using formula
-        const totalCredits = evaluateFormula(product.formula, variables);
-        
-        // Add single breakdown entry for the product
-        breakdown.push({
-          productName: product.name,
-          componentName: 'Formula-based calculation',
-          usage: Object.values(variables).reduce((sum, val) => sum + val, 0),
-          credits: totalCredits,
-        });
+        productCredits = evaluateFormula(product.formula, variables);
       } catch (error) {
         console.error('Formula calculation error:', error);
-        // Fallback to normal calculation
+        // Fallback: sum all components
         productInputs.forEach(input => {
           const component = product.components.find(c => c.name === input.componentName);
           if (component) {
-            breakdown.push({
-              productName: product.name,
-              componentName: component.name,
-              usage: input.value,
-              credits: input.value * component.multiplier,
-            });
+            productCredits += input.value * component.multiplier;
           }
         });
       }
     } else {
-      // Normal mode: Calculate each component separately
+      // Normal mode: Sum all components
       productInputs.forEach(input => {
         const component = product.components.find(c => c.name === input.componentName);
         if (component) {
-          breakdown.push({
-            productName: product.name,
-            componentName: component.name,
-            usage: input.value,
-            credits: input.value * component.multiplier,
-          });
+          productCredits += input.value * component.multiplier;
         }
       });
     }
+
+    // Get discount for this product (from the first input, as discount is per product)
+    const productDiscount = productInputs[0]?.discount || 0;
+
+    // Calculate pricing for this product
+    const basePrice = productCredits * pricePerCredit;
+    const finalPrice = Math.max(0, basePrice - productDiscount);
+
+    breakdown.push({
+      productName: product.name,
+      componentName: product.useFormula ? 'Formula-based calculation' : 'Standard calculation',
+      usage: productInputs.reduce((sum, input) => sum + input.value, 0),
+      credits: productCredits,
+      basePrice: parseFloat(basePrice.toFixed(2)),
+      discount: productDiscount,
+      finalPrice: parseFloat(finalPrice.toFixed(2)),
+    });
   });
 
   const totalCredits = breakdown.reduce((sum, item) => sum + item.credits, 0);
+  const totalDiscount = breakdown.reduce((sum, item) => sum + item.discount, 0);
 
-  // Step 2: Apply safety buffer if enabled
+  // Apply safety buffer if enabled
   const bufferedCredits = settings.global.safetyBufferEnabled
     ? totalCredits * (1 + settings.global.safetyBuffer / 100)
     : totalCredits;
 
-  // Step 3: Apply minimum floor
+  // Apply minimum floor
   const appliedMinimum = bufferedCredits < settings.global.enterpriseMinimum;
   const finalCredits = Math.max(bufferedCredits, settings.global.enterpriseMinimum);
 
-  // Step 4: Determine price tier
-  const tier = determineTier(finalCredits, settings.tiers);
-
-  // Step 5: Calculate final price
-  const totalPrice = finalCredits * tier.pricePerCredit;
+  // Calculate prices
+  const basePrice = finalCredits * pricePerCredit;
+  const totalPrice = Math.max(0, basePrice - totalDiscount);
 
   return {
     totalCredits: Math.round(totalCredits),
     appliedMinimum,
     finalCredits: Math.round(finalCredits),
-    tier,
+    pricePerCredit,
+    basePrice: parseFloat(basePrice.toFixed(2)),
+    totalDiscount,
     totalPrice: parseFloat(totalPrice.toFixed(2)),
-    pricePerCredit: tier.pricePerCredit,
     breakdown,
   };
 }
 
-export function determineTier(credits: number, tiers: PricingTier[]): PricingTier {
-  const sortedTiers = [...tiers].sort((a, b) => a.minCredits - b.minCredits);
-  
-  for (const tier of sortedTiers) {
-    if (credits >= tier.minCredits && (tier.maxCredits === null || credits <= tier.maxCredits)) {
-      return tier;
-    }
-  }
-  
-  // Fallback to the last tier (should be Enterprise with no max)
-  return sortedTiers[sortedTiers.length - 1];
-}
-
-export function calculateUpsellPrice(
-  newTotalPrice: number,
-  existingCredits: number,
-  oldPricePerCredit: number
-): number {
-  const creditsAlreadyPaid = existingCredits * oldPricePerCredit;
-  return newTotalPrice - creditsAlreadyPaid;
-}
-
-export function findNextTierThreshold(
-  currentCredits: number,
-  tiers: PricingTier[]
-): { tier: PricingTier; creditsNeeded: number } | null {
-  const currentTier = determineTier(currentCredits, tiers);
-  const sortedTiers = [...tiers].sort((a, b) => a.minCredits - b.minCredits);
-  const currentTierIndex = sortedTiers.findIndex(t => t.name === currentTier.name);
-  
-  if (currentTierIndex < sortedTiers.length - 1) {
-    const nextTier = sortedTiers[currentTierIndex + 1];
-    const creditsNeeded = nextTier.minCredits - currentCredits;
-    
-    return {
-      tier: nextTier,
-      creditsNeeded,
-    };
-  }
-  
-  return null;
-}
 
 export function formatCurrency(amount: number, symbol: string = '$'): string {
   return `${symbol}${amount.toLocaleString('en-US', {
