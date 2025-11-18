@@ -1,5 +1,5 @@
 import { CalculationResult, DealInfo, AppSettings } from '../types';
-import { formatCurrency, formatCredits, calculateUpsellPrice } from '../utils/calculations';
+import { formatCurrency, formatCredits } from '../utils/calculations';
 import { TrendingUp, AlertCircle, CheckCircle, FileText } from 'lucide-react';
 
 interface CalculationDisplayProps {
@@ -28,8 +28,8 @@ export function CalculationDisplay({
   }
 
   const isUpsell = dealInfo?.dealType === 'upsell' && dealInfo.existingPrice;
-  const upsellAmount = isUpsell && dealInfo.existingCredits && dealInfo.existingPrice
-    ? calculateUpsellPrice(calculation.totalPrice, dealInfo.existingCredits, dealInfo.existingPrice)
+  const upsellAmount = isUpsell && dealInfo.existingPrice
+    ? calculation.totalPrice - dealInfo.existingPrice
     : 0;
 
   return (
@@ -83,24 +83,17 @@ export function CalculationDisplay({
           </div>
         </div>
 
-        {/* Tier Information */}
+        {/* Price Per Credit */}
         <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 border border-primary-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-primary-900">Current Tier</span>
+            <span className="text-sm font-medium text-primary-900">Price Per Credit</span>
             <CheckCircle className="w-5 h-5 text-primary-600" />
           </div>
           <div className="text-2xl font-bold text-primary-900 mb-1">
-            {calculation.tier.name}
+            {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)}
           </div>
           <div className="text-sm text-primary-700">
-            {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)} per credit
-          </div>
-          <div className="text-xs text-primary-600 mt-2">
-            {formatCredits(calculation.tier.minCredits)} -{' '}
-            {calculation.tier.maxCredits
-              ? formatCredits(calculation.tier.maxCredits)
-              : '∞'}{' '}
-            credits
+            Fixed rate for all credits
           </div>
         </div>
 

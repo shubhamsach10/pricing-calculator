@@ -124,29 +124,6 @@ export function Settings() {
     setLocalSettings({ ...localSettings, products: updatedProducts });
   };
 
-  const addTier = () => {
-    const newTier: PricingTier = {
-      name: 'New Tier',
-      minCredits: 0,
-      maxCredits: 10000,
-      pricePerCredit: 0.10,
-    };
-    setLocalSettings({
-      ...localSettings,
-      tiers: [...localSettings.tiers, newTier],
-    });
-  };
-
-  const updateTier = (index: number, field: string, value: any) => {
-    const updatedTiers = [...localSettings.tiers];
-    updatedTiers[index] = { ...updatedTiers[index], [field]: value };
-    setLocalSettings({ ...localSettings, tiers: updatedTiers });
-  };
-
-  const deleteTier = (index: number) => {
-    const updatedTiers = localSettings.tiers.filter((_, i) => i !== index);
-    setLocalSettings({ ...localSettings, tiers: updatedTiers });
-  };
 
   return (
     <div className="space-y-6">
@@ -230,19 +207,6 @@ export function Settings() {
               <div className="flex items-center">
                 <Layers className="w-4 h-4 mr-2" />
                 Products & Multipliers
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('tiers')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'tiers'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-              }`}
-            >
-              <div className="flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Volume Discount Tiers
               </div>
             </button>
           </nav>

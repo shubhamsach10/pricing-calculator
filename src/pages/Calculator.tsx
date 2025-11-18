@@ -6,7 +6,7 @@ import { ProductSelector } from '../components/ProductSelector';
 import { CalculationDisplay } from '../components/CalculationDisplay';
 import { SmartNudge } from '../components/SmartNudge';
 import { QuoteSummary } from '../components/QuoteSummary';
-import { calculatePricing, findNextTierThreshold } from '../utils/calculations';
+import { calculatePricing } from '../utils/calculations';
 
 export function Calculator() {
   const { settings } = useSettings();
@@ -21,21 +21,8 @@ export function Calculator() {
     if (usageInputs.length > 0 && dealInfo?.pricingModel === 'credits') {
       const result = calculatePricing(usageInputs, settings, dealInfo?.existingCredits);
       setCalculation(result);
-
-      // Check for tier threshold nudge
-      const nextTier = findNextTierThreshold(result.finalCredits, settings.tiers);
-      if (nextTier && nextTier.creditsNeeded < result.finalCredits * 0.1) {
-        // Within 10% of next tier
-        const potentialSavings = result.finalCredits * (result.pricePerCredit - nextTier.tier.pricePerCredit);
-        setNudgeInfo({
-          ...nextTier,
-          currentTier: result.tier,
-          potentialSavings,
-        });
-        setShowNudge(true);
-      } else {
-        setShowNudge(false);
-      }
+      // Smart nudges based on discounts can be added here in the future
+      setShowNudge(false);
     }
   }, [usageInputs, settings, dealInfo]);
 

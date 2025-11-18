@@ -1,5 +1,5 @@
 import { DealInfo, CalculationResult, AppSettings } from '../types';
-import { formatCurrency, formatCredits, calculateUpsellPrice } from '../utils/calculations';
+import { formatCurrency, formatCredits } from '../utils/calculations';
 import { ArrowLeft, Download, Send, CheckCircle, Building2 } from 'lucide-react';
 
 interface QuoteSummaryProps {
@@ -18,8 +18,8 @@ export function QuoteSummary({
   onStartNew,
 }: QuoteSummaryProps) {
   const isUpsell = dealInfo.dealType === 'upsell' && dealInfo.existingPrice;
-  const upsellAmount = isUpsell && dealInfo.existingCredits && dealInfo.existingPrice
-    ? calculateUpsellPrice(calculation.totalPrice, dealInfo.existingCredits, dealInfo.existingPrice)
+  const upsellAmount = isUpsell && dealInfo.existingPrice
+    ? calculation.totalPrice - dealInfo.existingPrice
     : 0;
 
   const handleDownloadPDF = () => {
@@ -171,13 +171,13 @@ export function QuoteSummary({
 
               <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-primary-900 font-medium">Pricing Tier</span>
+                  <span className="text-primary-900 font-medium">Price Per Credit</span>
                   <span className="text-2xl font-bold text-primary-900">
-                    {calculation.tier.name}
+                    {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)}
                   </span>
                 </div>
                 <div className="text-sm text-primary-700">
-                  {formatCurrency(calculation.pricePerCredit, settings.global.currencySymbol)} per credit
+                  Fixed rate for all credits
                 </div>
               </div>
             </div>
