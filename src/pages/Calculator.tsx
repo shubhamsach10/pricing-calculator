@@ -15,7 +15,7 @@ export function Calculator() {
   const [usageInputs, setUsageInputs] = useState<UsageInput[]>([]);
   const [calculation, setCalculation] = useState<CalculationResult | null>(null);
   const [showNudge, setShowNudge] = useState(false);
-  const [nudgeInfo, setNudgeInfo] = useState<any>(null);
+  const [nudgeInfo] = useState<any>(null);
 
   useEffect(() => {
     if (usageInputs.length > 0 && dealInfo?.pricingModel === 'credits') {
